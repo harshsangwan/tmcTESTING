@@ -1,0 +1,166 @@
+# API Gateway Service
+
+## Overview
+
+The API Gateway service serves as the entry point for all client requests in the Task Management System microservice architecture. It routes requests to the appropriate microservices, handles cross-cutting concerns such as authentication, CORS, rate limiting, and circuit breaking.
+
+## Features
+
+- **Centralized Routing**: Routes client requests to the appropriate microservices based on path patterns
+- **Authentication**: Validates JWT tokens and forwards requests to protected resources
+- **CORS Support**: Handles Cross-Origin Resource Sharing headers for browser compatibility
+- **Rate Limiting**: Protects services from abuse by limiting the number of requests per client
+- **Circuit Breaking**: Prevents cascading failures using circuit breaker patterns
+- **Request Logging**: Logs all incoming requests for audit and debugging purposes
+- **Fallback Responses**: Provides meaningful fallback responses when services are unavailable
+- **Health Checks**: Offers endpoints for monitoring system health
+
+## Architecture
+
+The API Gateway is implemented using Spring Cloud Gateway and includes the following components:
+
+1. **Route Configuration**: Defines how requests are routed to downstream services
+2. **Authentication Filter**: Validates JWT tokens for protected routes
+3. **Rate Limiter Filter**: Limits request rates per client IP
+4. **Circuit Breaker Configuration**: Configures circuit breakers for resilience
+5. **Global Exception Handler**: Provides consistent error responses
+6. **Logging Filter**: Logs all requests and responses
+
+## Routes
+
+The API Gateway routes requests to the following microservices:
+
+- **Auth Service** (`/api/auth/**`): Handles authentication and user management
+- **Project Service** (`/api/projects/**`): Manages projects
+- **Task Service** (`/api/tasks/**`): Manages tasks
+- **Notification Service** (`/api/notifications/**`): Handles notifications
+- **Integration Service** (`/api/integrations/**`): Manages integrations with external services
+
+## Requirements
+
+- Java 17 or higher
+- Maven 3.6 or higher
+- Spring Boot 3.2+
+- Spring Cloud 2023.0+
+
+## Configuration
+
+### Application Properties
+
+The application can be configured using the following properties:
+
+- `server.port`: The port the gateway runs on (default: 8080)
+- `app.jwt.secret`: Secret key for JWT validation
+- `app.jwt.issuer`: JWT issuer for validation
+
+### Circuit Breaker Configuration
+
+Circuit breakers are configured per service with the following parameters:
+
+- `slidingWindowSize`: Number of requests used to calculate failure rate
+- `failureRateThreshold`: Percentage of failures that will open the circuit
+- `waitDurationInOpenState`: How long the circuit stays open before trying again
+- `permittedNumberOfCallsInHalfOpenState`: Number of calls allowed in half-open state
+
+### Rate Limiting Configuration
+
+Rate limiting is configured with the following parameters:
+
+- `limitForPeriod`: Maximum number of requests allowed in the specified period
+- `limitRefreshPeriodInSeconds`: Period in seconds for the rate limit window
+- `timeoutDurationInMillis`: Timeout duration for rate limit check
+
+## Running the Service
+
+### Development Mode
+
+```bash
+# Run with dev profile
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+### Production Mode
+
+```bash
+# Build the service
+mvn clean package
+
+# Run the service
+java -jar target/api-gateway-0.0.1-SNAPSHOT.jar
+```
+
+## Environment Variables
+
+For production deployments, configure the following environment variables:
+
+- `JWT_SECRET`: Secret key for JWT token validation
+- `EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE`: URL for Eureka service discovery
+- `CONFIG_SERVER_URL`: URL for Spring Cloud Config server
+
+## Health Checks
+
+The service provides health check endpoints:
+
+- `/health`: Basic health check returning status
+- `/health/details`: Detailed health information including memory usage
+
+## Testing
+
+### Unit Tests
+
+```bash
+mvn test
+```
+
+### Integration Tests
+
+```bash
+mvn verify
+```
+
+## Deploying with Docker
+
+A Dockerfile is provided to containerize the service:
+
+```bash
+# Build Docker image
+docker build -t task-management/api-gateway .
+
+# Run container
+docker run -p 8080:8080 \
+  -e JWT_SECRET=your_secret_here \
+  -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/ \
+  task-management/api-gateway
+```
+
+## Integration with Frontend
+
+The Angular frontend should be configured to send all API requests to this gateway. The gateway will handle routing, authentication, and other cross-cutting concerns.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Authentication Failures**: Check JWT secret configuration matches auth service
+2. **Service Discovery Issues**: Ensure Eureka client is properly configured
+3. **CORS Errors**: Verify CORS configuration matches frontend needs
+4. **Rate Limiting**: Adjust rate limit configuration if legitimate requests are being blocked
+
+### Logs
+
+Check the logs for detailed information:
+
+```bash
+# View logs in real-time
+tail -f logs/api-gateway.log
+```
+
+## Contributing
+
+Please follow these guidelines when contributing to the API Gateway service:
+
+1. Create a feature branch from `develop`
+2. Follow the code style guidelines
+3. Write unit tests for new functionality
+4. Update documentation as needed
+5. Submit a pull request for review

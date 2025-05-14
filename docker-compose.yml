@@ -1,0 +1,592 @@
+# # version: "3.8"
+
+# services:
+#   # Service Discovery
+#   discovery-service:
+#     build:
+#       context: ./discovery-service
+#     container_name: discovery-service
+#     ports:
+#       - "8761:8761"
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8761/actuator/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 40s
+#     networks:
+#       - task-management-network
+
+#   # Database Service
+#   mysql:
+#     image: mysql:8.0
+#     container_name: mysql
+#     ports:
+#       - "3306:3306"
+#     environment:
+#       - MYSQL_ROOT_PASSWORD=letmEc0de#8
+#       - MYSQL_ALLOW_EMPTY_PASSWORD=no
+#     volumes:
+#       - mysql-data:/var/lib/mysql
+#       - ./init-scripts:/docker-entrypoint-initdb.d/
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "mysqladmin",
+#           "ping",
+#           "-h",
+#           "localhost",
+#           "-u",
+#           "root",
+#           "-pletmEc0de#8",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 40s
+#     networks:
+#       - task-management-network
+
+#   # API Gateway Service
+#   api-gateway:
+#     build:
+#       context: ./api-gateway
+#     container_name: api-gateway
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+#       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+#       - SPRING_CLOUD_CONFIG_ENABLED=false
+#       - "SPRING_CONFIG_IMPORT=optional:configserver:"
+#     depends_on:
+#       discovery-service:
+#         condition: service_healthy
+#       mysql:
+#         condition: service_healthy
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8080/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 40s
+#     networks:
+#       - task-management-network
+
+#   # Auth Service
+#   auth-service:
+#     build:
+#       context: ./auth-service
+#     container_name: auth-service
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_auth?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+#       - SPRING_DATASOURCE_USERNAME=root
+#       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+#       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+#       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+#     depends_on:
+#       mysql:
+#         condition: service_healthy
+#       discovery-service:
+#         condition: service_healthy
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8081/actuator/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 60s
+#     networks:
+#       - task-management-network
+
+#   # Project Service
+#   project-service:
+#     build:
+#       context: ./project-service
+#     container_name: project-service
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+#       - SPRING_DATASOURCE_USERNAME=root
+#       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+#       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+#       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+#     depends_on:
+#       mysql:
+#         condition: service_healthy
+#       discovery-service:
+#         condition: service_healthy
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8082/actuator/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 60s
+#     networks:
+#       - task-management-network
+
+#   # Task Service
+#   task-service:
+#     build:
+#       context: ./task-service
+#     container_name: task-service
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_tasks?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+#       - SPRING_DATASOURCE_USERNAME=root
+#       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+#       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+#       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+#     depends_on:
+#       mysql:
+#         condition: service_healthy
+#       discovery-service:
+#         condition: service_healthy
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8083/actuator/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 60s
+#     networks:
+#       - task-management-network
+
+#   # Integration Service
+#   integration-service:
+#     build:
+#       context: ./integration-service
+#     container_name: integration-service
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_integrations?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+#       - SPRING_DATASOURCE_USERNAME=root
+#       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+#       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+#       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+#     depends_on:
+#       mysql:
+#         condition: service_healthy
+#       discovery-service:
+#         condition: service_healthy
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8084/actuator/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 60s
+#     networks:
+#       - task-management-network
+
+#   # Admin Service
+#   admin-service:
+#     build:
+#       context: ./admin-service
+#     container_name: admin-service
+#     environment:
+#       - SPRING_PROFILES_ACTIVE=docker
+#       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_admin?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+#       - SPRING_DATASOURCE_USERNAME=root
+#       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+#       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+#       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+#     depends_on:
+#       mysql:
+#         condition: service_healthy
+#       discovery-service:
+#         condition: service_healthy
+#     healthcheck:
+#       test:
+#         [
+#           "CMD",
+#           "wget",
+#           "--no-verbose",
+#           "--tries=1",
+#           "--spider",
+#           "http://localhost:8085/actuator/health",
+#         ]
+#       interval: 30s
+#       timeout: 5s
+#       retries: 3
+#       start_period: 60s
+#     networks:
+#       - task-management-network
+
+#   # Angular Frontend
+#   frontend:
+#     build:
+#       context: /Users/harshkumar/Desktop/TMCtest2/task-management # Exact path to your Angular project
+#       dockerfile: ./Dockerfile
+#     container_name: frontend
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - api-gateway
+#     networks:
+#       - task-management-network
+
+# # Volumes
+# volumes:
+#   mysql-data:
+
+# # Networks
+# networks:
+#   task-management-network:
+#     driver: bridge
+
+# version: "3.8"
+
+services:
+  # Service Discovery
+  discovery-service:
+    build:
+      context: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8761/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - task-management-network
+
+  # Database Service
+  mysql:
+    image: mysql:8.0.35
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=letmEc0de#8
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-pletmEc0de#8",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - task-management-network
+
+  # API Gateway Service
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+      - SPRING_CLOUD_CONFIG_ENABLED=false
+      - "SPRING_CONFIG_IMPORT=optional:configserver:"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    networks:
+      - task-management-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+    container_name: auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_auth?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8081/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - task-management-network
+
+  # Project Service
+  project-service:
+    build:
+      context: ./project-service
+    container_name: project-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_project?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8082/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - task-management-network
+
+  # Task Service
+  task-service:
+    build:
+      context: ./task-service
+    container_name: task-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_tasks?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8083/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - task-management-network
+
+  # Integration Service
+  integration-service:
+    build:
+      context: ./integration-service
+    container_name: integration-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_integrations?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8084/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - task-management-network
+
+  # Admin Service
+  admin-service:
+    build:
+      context: ./admin-service
+    container_name: admin-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/task_management_admin?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8085/actuator/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - task-management-network
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./task-management
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - task-management-network
+
+# Volumes
+volumes:
+  mysql-data:
+
+# Networks
+networks:
+  task-management-network:
+    driver: bridge
