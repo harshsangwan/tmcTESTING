@@ -1,38 +1,45 @@
-# Stage 1: Build the Angular application
-FROM node:18 as build
+# Multi-stage build for Angular app
+FROM node:18-alpine as build
+
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files first for better layer caching
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Clear npm cache and install dependencies
+# Using npm ci for production builds and --platform=linux/amd64 to avoid platform issues
+RUN npm cache clean --force && \
+    npm ci --omit=dev --platform=linux/amd64
 
-# Copy the rest of the application
+# Copy source code
 COPY . .
 
-# Build the application
+# Build the application (remove --prod flag as it's deprecated in Angular 19)
 RUN npm run build
 
-# Stage 2: Serve the built application with Nginx
-FROM nginx:alpine
+# Production stage with nginx
+FROM nginx:1.25-alpine
 
-# Remove default nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+# Remove default nginx configuration
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy the built application to Nginx
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built application
 COPY --from=build /app/dist/task-management/browser /usr/share/nginx/html
 
-# Ensure we have an index.html by copying from index.csr.html if needed
-RUN if [ -f /usr/share/nginx/html/index.csr.html ] && [ ! -f /usr/share/nginx/html/index.html ]; then \
-    cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; \
-    fi
+# Set proper permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R 755 /usr/share/nginx/html
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Create required directories
+RUN mkdir -p /var/cache/nginx && \
+    chown -R nginx:nginx /var/cache/nginx
 
 # Expose port 80
 EXPOSE 80
 
-# Start Nginx
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
