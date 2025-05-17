@@ -132,11 +132,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
-      - MANAGEMENT_SECURITY_ENABLED=false
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
-      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
-      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     depends_on:
       mysql:
         condition: service_healthy
@@ -167,11 +162,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
-      - MANAGEMENT_SECURITY_ENABLED=false
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
-      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
-      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     depends_on:
       mysql:
         condition: service_healthy
@@ -202,11 +192,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=letmEc0de#8
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
       - JWT_SECRET=3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b80c0ceb73d3d121182c95878b9a33cd8caf5bee427d6f0b9b5b989f0bd25c035
-      - MANAGEMENT_SECURITY_ENABLED=false
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
-      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
-      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     depends_on:
       mysql:
         condition: service_healthy

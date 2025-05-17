@@ -1,0 +1,26 @@
+{
+  "services": {
+    "project-service": {
+      "status": "UP",
+      "details": "Service status mocked for development"
+    },
+    "task-service": {
+      "status": "UP",
+      "details": "Service status mocked for development"
+    },
+    "integration-service": {
+      "status": "UP",
+      "details": "Service status mocked for development"
+    },
+    "auth-service": {
+      "status": "UP", 
+      "details": "Service status mocked for development"
+    },
+    "admin-service": {
+      "status": "UP",
+      "details": "Service status mocked for development"
+    }
+  },
+  "status": "UP",
+  "timestamp": "2025-05-17T12:00:00Z"
+}
