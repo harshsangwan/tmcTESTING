@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service-passthrough
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/auth/**
+      default-filters: []
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+    loadbalancer:
+      ribbon:
+        enabled: false
+    circuit-breaker:
+      enabled: false
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: TRACE

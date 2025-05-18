@@ -1,4 +1,9 @@
-package main.java.com.taskmanagement.auth.controller;
+#!/bin/bash
+echo "=== Fixing HealthController Package Issue ==="
+
+# Create correct HealthController with proper package
+cat > auth-service/src/main/java/com/taskmanagement/auth/controller/HealthController.java << 'EOF'
+package com.taskmanagement.auth.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,3 +25,6 @@ public class HealthController {
         return ResponseEntity.ok(status);
     }
 }
+EOF
+
+echo "Health Controller fixed. Now restart the Auth Service..."

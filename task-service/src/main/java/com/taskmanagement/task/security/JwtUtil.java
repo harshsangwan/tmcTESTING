@@ -1,4 +1,4 @@
-package com.taskmanagement.project.security;
+package com.taskmanagement.task.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

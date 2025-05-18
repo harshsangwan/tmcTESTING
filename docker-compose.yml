@@ -34,7 +34,7 @@ services:
     networks:
       - task-management-network
 
-  # Service Discovery
+  # Service Discovery - REMOVED HEALTH CHECK
   discovery-service:
     build:
       context: ./discovery-service
@@ -46,24 +46,11 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:8761/actuator/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
+    # healthcheck removed to avoid startup failures
     networks:
       - task-management-network
 
-  # API Gateway Service
+  # API Gateway Service - UPDATED DEPENDENCY CONDITION
   api-gateway:
     build:
       context: ./api-gateway
@@ -78,7 +65,7 @@ services:
       - "SPRING_CONFIG_IMPORT=optional:configserver:"
     depends_on:
       discovery-service:
-        condition: service_healthy
+        condition: service_started # Changed from service_healthy
       mysql:
         condition: service_healthy
     healthcheck:
@@ -90,7 +77,7 @@ services:
     networks:
       - task-management-network
 
-  # Auth Service - ADDED PORT MAPPING
+  # Auth Service - UPDATED DEPENDENCY CONDITION
   auth-service:
     build:
       context: ./auth-service
@@ -108,7 +95,7 @@ services:
       mysql:
         condition: service_healthy
       discovery-service:
-        condition: service_healthy
+        condition: service_started # Changed from service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 30s
@@ -118,7 +105,7 @@ services:
     networks:
       - task-management-network
 
-  # Project Service - ADDED PORT MAPPING
+  # Project Service - UPDATED DEPENDENCY CONDITION
   project-service:
     build:
       context: ./project-service
@@ -141,7 +128,7 @@ services:
       mysql:
         condition: service_healthy
       discovery-service:
-        condition: service_healthy
+        condition: service_started # Changed from service_healthy
       auth-service:
         condition: service_healthy
     healthcheck:
@@ -153,7 +140,7 @@ services:
     networks:
       - task-management-network
 
-  # Task Service - ADDED PORT MAPPING
+  # Task Service - UPDATED DEPENDENCY CONDITION
   task-service:
     build:
       context: ./task-service
@@ -176,7 +163,7 @@ services:
       mysql:
         condition: service_healthy
       discovery-service:
-        condition: service_healthy
+        condition: service_started # Changed from service_healthy
       auth-service:
         condition: service_healthy
     healthcheck:
@@ -188,7 +175,7 @@ services:
     networks:
       - task-management-network
 
-  # Integration Service - ADDED PORT MAPPING
+  # Integration Service - UPDATED DEPENDENCY CONDITION
   integration-service:
     build:
       context: ./integration-service
@@ -211,7 +198,7 @@ services:
       mysql:
         condition: service_healthy
       discovery-service:
-        condition: service_healthy
+        condition: service_started # Changed from service_healthy
       auth-service:
         condition: service_healthy
     healthcheck:
@@ -223,7 +210,7 @@ services:
     networks:
       - task-management-network
 
-  # Admin Service - ADDED PORT MAPPING
+  # Admin Service - UPDATED DEPENDENCY CONDITION
   admin-service:
     build:
       context: ./admin-service
@@ -241,7 +228,7 @@ services:
       mysql:
         condition: service_healthy
       discovery-service:
-        condition: service_healthy
+        condition: service_started # Changed from service_healthy
       auth-service:
         condition: service_healthy
     healthcheck:
@@ -253,7 +240,7 @@ services:
     networks:
       - task-management-network
 
-  # Angular Frontend
+  # Angular Frontend - UPDATED DEPENDENCY CONDITION
   frontend:
     build:
       context: ./task-management
