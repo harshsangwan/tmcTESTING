@@ -1,5 +1,6 @@
 {
   "status": "UP",
   "service": "projects-service",
-  "timestamp": "2025-05-17T12:00:00Z"
+  "timestamp": "2025-05-20T15:50:37Z",
+  "note": "This is a fallback response from nginx"
 }
